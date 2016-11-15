@@ -1,7 +1,7 @@
 package org.beltser;
 
 import org.apache.commons.collections.map.HashedMap;
-import org.beltser.ppz.labs.OperatorLab4;
+import org.beltser.ppz.labs.OperatorLab5;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class Test {
   }
   @org.junit.Test
   public void test2() throws Exception {
-    OperatorLab4 lab = new OperatorLab4(10, TimeUnit.SECONDS);
+    OperatorLab5 lab = new OperatorLab5(10, TimeUnit.SECONDS);
     Map<String, Object> map = new HashedMap();
     BigDecimal answer = lab.launch(map);
     System.out.println("answer = " + answer.doubleValue());

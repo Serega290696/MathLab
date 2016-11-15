@@ -141,7 +141,7 @@ public class OperatorLab4 extends Operator<BigDecimal> {
     Point xh = null;
     Point xg = null;
     Point xl = null;
-    for (int counter = 0; counter < 1200; counter++) {
+    for (int counter = 0; counter < 70; counter++) {
       // =========================== STEP #8 ===========================
       // ===============================================================
       System.out.println("\t\t\tSTEP-8");
