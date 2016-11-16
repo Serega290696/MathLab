@@ -21,6 +21,7 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+<<<<<<< HEAD
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -31,6 +32,8 @@
             <artifactId>logback-classic</artifactId>
             <version>1.1.5</version>
         </dependency>
+=======
+>>>>>>> 97e17d377b1a149e0bbfa0f48f747dcb847a70b7
     </dependencies>
 
     <build>

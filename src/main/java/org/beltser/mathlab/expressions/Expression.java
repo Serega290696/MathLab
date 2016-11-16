@@ -8,10 +8,10 @@ import java.util.Set;
 
 public interface Expression {
 
-    default double value() {
-        //todo: remove value(double... vars); and rewrite method
-        return value(0);
-    }
+//    default double value() {
+//        //todo: remove value(double... vars); and rewrite method
+//        return value(0);
+//    }
 
     double value(double... vars);
 
