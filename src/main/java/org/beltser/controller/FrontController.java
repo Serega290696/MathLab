@@ -444,31 +444,30 @@ public class FrontController {
     answerField.setText("");
   }
 
-  public void showChart() {
-    FXMLLoader loader = new FXMLLoader();
-    loader.setLocation(Main.class.getResource("fxml/chart.fxml"));
-    Pane pane = null;
-    try {
-      pane = loader.load();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    if (pane == null) {
-      throw new NullPointerException("pane is null");
-    }
-    // Создаём диалоговое окно Stage.
-    Stage dialogStage = new Stage();
-
-    Scene scene = new Scene(pane);
-    dialogStage.setScene(scene);
-    dialogStage.setTitle("Computing chart");
-    dialogStage.initModality(Modality.WINDOW_MODAL);
-    dialogStage.initOwner(Main.stage);
-
-    // Передаём адресата в контроллер.
-        ChartController controller = loader.getController();
-
-    // Отображаем диалоговое окно и ждём, пока пользователь его не закроет
-    dialogStage.showAndWait();
-  }
+//  public void showChart() {
+//    FXMLLoader loader = new FXMLLoader();
+//    loader.setLocation(Main.class.getResource("fxml/chart.fxml"));
+//    Pane pane = null;
+//    try {
+//      pane = loader.load();
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
+//    if (pane == null) {
+//      throw new NullPointerException("pane is null");
+//    }
+//    // Создаём диалоговое окно Stage.
+//    Stage dialogStage = new Stage();
+//
+//    Scene scene = new Scene(pane);
+//    dialogStage.setScene(scene);
+//    dialogStage.setTitle("Computing chart");
+//    dialogStage.initModality(Modality.WINDOW_MODAL);
+//    dialogStage.initOwner(Main.stage);
+//
+//    // Передаём адресата в контроллер.
+//        ChartController controller = loader.getController();
+//    // Отображаем диалоговое окно и ждём, пока пользователь его не закроет
+//    dialogStage.showAndWait();
+//  }
 }
