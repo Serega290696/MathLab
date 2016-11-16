@@ -3,7 +3,11 @@ package org.beltser.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import org.beltser.CustomPrintStream;
+import org.beltser.mathlab.ExpressionParser;
+import org.beltser.mathlab.exception.ExpressionParsingException;
+import org.beltser.mathlab.matrix.Matrix;
 import org.beltser.mathlab.report.ReportPrinter;
 import org.beltser.mathlab.report.ReportPrinterJavafx;
 import org.beltser.ppz.labs.OperatorLab1;
@@ -117,6 +121,7 @@ public class FrontController {
 
     public TextArea answerField;
     public CheckBox isMatrixSymmetric;
+    private Stage stage;
 
     private boolean isMatrixElementsInit() {
         return matrixElements != null && matrixElements.length > 0 && matrixElements[0].length > 0
@@ -176,15 +181,20 @@ public class FrontController {
             int height;
             try {
                 height = Integer.parseInt(matrixHeight.getText());
+                if (height < 1 || height > 5) {
+                    throw new NumberFormatException();
+                }
             } catch (NumberFormatException e) {
-                System.err.println("Wrong number");
+                errorWindow("Wrong matrix height. Enter integer number in range 1-5.");
+                System.err.println("Wrong matrix height. Enter integer number in range 1-5.");
                 return;
             }
             int width;
             try {
                 width = Integer.parseInt(matrixWidth.getText());
             } catch (NumberFormatException e) {
-                System.err.println("Wrong number");
+                errorWindow("Wrong matrix width. Enter integer number in range 1-5.");
+                System.err.println("Wrong matrix width. Enter integer number in range 1-5.");
                 return;
             }
             System.out.println("Height is " + height);
@@ -197,95 +207,20 @@ public class FrontController {
                     operator1.launch(args);
                 }
             } else {
-                System.err.println("Wrong matrix");
+                errorWindow("Wrong matrix. Please, initialize matrix elements in tab 'system tab'.");
+                System.err.println("Wrong matrix. Please, initialize matrix elements in tab 'system tab'.");
             }
         } else if (integralTab.isSelected()) {
             Map<String, Object> args = collectDataToTask2();
             if (args != null) {
                 operator2.launch(args);
-            } else {
-                System.err.println("Wrong input");
             }
         } else if (difTab.isSelected()) {
             Map<String, Object> args = collectDataToTask3();
             if (args != null) {
                 operator3.launch(args);
-            } else {
-                System.err.println("Wrong input");
             }
         }
-    }
-
-    private Map<String, Object> collectDataToTask3() {
-        Map<String, Object> args = new HashMap<>();
-        String expression = difExpressionField.getText();
-        double x0;
-        double y0;
-        double a;
-        double b;
-        if (!"".equals(expression)) {
-            args.put(OperatorLab3.EXPRESSION_FIELD_NAME, expression);
-        } else {
-            System.err.println("Wrong expression");
-            return null;
-        }
-        try {
-            x0 = Double.parseDouble(xField.getText());
-        } catch (Exception e) {
-            System.err.println("Wrong x0: " + xField.getText());
-            return null;
-        }
-        try {
-            y0 = Double.parseDouble(yField.getText());
-        } catch (Exception e) {
-            System.err.println("Wrong y0: " + yField.getText());
-            return null;
-        }
-        try {
-            a = Double.parseDouble(aDifField.getText());
-        } catch (Exception e) {
-            System.err.println("Wrong y0: " + aDifField.getText());
-            return null;
-        }
-        try {
-            b = Double.parseDouble(bDifField.getText());
-        } catch (Exception e) {
-            System.err.println("Wrong y0: " + bDifField.getText());
-            return null;
-        }
-        args.put(OperatorLab3.X_ZERO_FIELD_NAME, x0);
-        args.put(OperatorLab3.Y_ZERO_FIELD_NAME, y0);
-        args.put(OperatorLab3.A_FIELD_NAME, a);
-        args.put(OperatorLab3.B_FIELD_NAME, b);
-        return args;
-    }
-
-    private Map<String, Object> collectDataToTask2() {
-        Map<String, Object> args = new HashMap<>();
-        String integrand = integrandField.getText();
-        double a;
-        double b;
-        if (!"".equals(integrand)) {
-            args.put(OperatorLab2.EXPRESSION_FIELD_NAME, integrand);
-        } else {
-            System.err.println("Wrong integrand");
-            return null;
-        }
-        try {
-            a = Double.parseDouble(aField.getText());
-        } catch (Exception e) {
-            System.err.println("Wrong lower limit: " + aField.getText());
-            return null;
-        }
-        try {
-            b = Double.parseDouble(bField.getText());
-        } catch (Exception e) {
-            System.err.println("Wrong upper limit: " + bField.getText());
-            return null;
-        }
-        args.put(OperatorLab2.BEGIN_BOUNDARY_FIELD_NAME, a);
-        args.put(OperatorLab2.END_BOUNDARY_FIELD_NAME, b);
-        return args;
     }
 
     private Map<String, Object> collectDataToTask1() {
@@ -300,7 +235,7 @@ public class FrontController {
                 }
             }
         }
-        double[][] matrix = new double[height][width - 1];
+        double[][] matrixArray = new double[height][width - 1];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width - 1; j++) {
                 double d;
@@ -308,23 +243,25 @@ public class FrontController {
                     d = Double.parseDouble(matrixElements[i][j].getText());
                 } catch (Exception e) {
                     System.err.println("Wrong matrix element: " + i + "x" + j);
+                    errorWindow("Wrong matrix element: " + i + "x" + j);
                     return null;
                 }
-                matrix[i][j] = d;
+                matrixArray[i][j] = d;
             }
         }
-        if (!isMatrixSymmetry(matrix)) {
+        Matrix matrix = new Matrix(matrixArray);
+        System.out.println(matrix);
+        if (!matrix.isSymmetric()) {
+            System.err.println("The matrix must be symmetric");
+            errorWindow("The matrix must be symmetric");
             return null;
         }
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width - 1; j++) {
-                if (matrix[i][j] != matrix[j][i]) {
-                    System.err.println("Wrong matrix type! Matrix must be symmetry");
-                    return null;
-                }
-            }
+        if (!matrix.isPositive()) {
+            System.err.println("The matrix must be positive");
+            errorWindow("The matrix must be positive");
+            return null;
         }
-        args.put("matrix", matrix);
+        args.put("matrix", matrixArray);
         double[][] b = new double[height][1];
         for (int i = 0; i < height; i++) {
             double d;
@@ -332,6 +269,7 @@ public class FrontController {
                 d = Double.parseDouble(matrixElements[i][width - 1].getText());
             } catch (Exception e) {
                 System.err.println("Wrong b vector element: " + i + "x" + (width - 1));
+                errorWindow("Wrong b vector element: " + i + "x" + (width - 1));
                 return null;
             }
             b[i][0] = d;
@@ -340,18 +278,90 @@ public class FrontController {
         return args;
     }
 
-    private boolean isMatrixSymmetry(double[][] matrix) {
-        if (matrix.length != matrix[0].length) {
-            return false;
-        }
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++) {
-                if (matrix[i][j] != matrix[j][i]) {
-                    return false;
-                }
+    private Map<String, Object> collectDataToTask2() {
+        Map<String, Object> args = new HashMap<>();
+        String integrand = integrandField.getText();
+        double a;
+        double b;
+        if (!"".equals(integrand)) {
+            args.put(OperatorLab2.EXPRESSION_FIELD_NAME, integrand);
+            try {
+                ExpressionParser.PARSER_INSTANCE.parse(integrand);
+            } catch (ExpressionParsingException e) {
+                System.err.println("Couldn't parse integrand . Integrand isn't math expression");
+                errorWindow("Integrand is empty");
             }
+        } else {
+            System.err.println("Integrand is empty");
+            errorWindow("Integrand is empty");
+            return null;
         }
-        return true;
+        try {
+            a = Double.parseDouble(aField.getText());
+        } catch (Exception e) {
+            System.err.println("Wrong lower limit: " + aField.getText());
+            errorWindow("Wrong lower limit: " + aField.getText() + ". It must be real number");
+            return null;
+        }
+        try {
+            b = Double.parseDouble(bField.getText());
+        } catch (Exception e) {
+            System.err.println("Wrong upper limit: " + bField.getText());
+            errorWindow("Wrong upper limit: " + bField.getText() + ". It must be real number");
+            return null;
+        }
+        args.put(OperatorLab2.BEGIN_BOUNDARY_FIELD_NAME, a);
+        args.put(OperatorLab2.END_BOUNDARY_FIELD_NAME, b);
+        return args;
+    }
+
+    private Map<String, Object> collectDataToTask3() {
+        Map<String, Object> args = new HashMap<>();
+        String expression = difExpressionField.getText();
+        double x0;
+        double y0;
+        double a;
+        double b;
+        if (!"".equals(expression)) {
+            args.put(OperatorLab3.EXPRESSION_FIELD_NAME, expression);
+        } else {
+            System.err.println("Couldn't parse expression");
+            errorWindow("Couldn't parse expression");
+            return null;
+        }
+        try {
+            x0 = Double.parseDouble(xField.getText());
+        } catch (Exception e) {
+            System.err.println("Wrong x0: " + xField.getText());
+            errorWindow("Wrong x0: " + xField.getText() + ". It must be real number");
+            return null;
+        }
+        try {
+            y0 = Double.parseDouble(yField.getText());
+        } catch (Exception e) {
+            System.err.println("Wrong y0: " + yField.getText());
+            errorWindow("Wrong y0: " + yField.getText() + ". It must be real number");
+            return null;
+        }
+        try {
+            a = Double.parseDouble(aDifField.getText());
+        } catch (Exception e) {
+            System.err.println("Wrong a: " + aDifField.getText());
+            errorWindow("Wrong a: " + aDifField.getText() + ". It must be real number");
+            return null;
+        }
+        try {
+            b = Double.parseDouble(bDifField.getText());
+        } catch (Exception e) {
+            System.err.println("Wrong b: " + bDifField.getText());
+            errorWindow("Wrong b: " + bDifField.getText() + ". It must be real number");
+            return null;
+        }
+        args.put(OperatorLab3.X_ZERO_FIELD_NAME, x0);
+        args.put(OperatorLab3.Y_ZERO_FIELD_NAME, y0);
+        args.put(OperatorLab3.A_FIELD_NAME, a);
+        args.put(OperatorLab3.B_FIELD_NAME, b);
+        return args;
     }
 
     private void changeMatrixFormSize(int width, int height) {
@@ -408,7 +418,7 @@ public class FrontController {
     }
 
     public void autoFill() {
-        if(!isMatrixSymmetric.isSelected()) {
+        if (!isMatrixSymmetric.isSelected()) {
             return;
         }
         for (int i = 0; i < matrixElements.length && matrixElements[i][0].isVisible(); i++) {
@@ -425,9 +435,24 @@ public class FrontController {
             }
         }
     }
+
     public void clearConsole() {
         printStream.clearAll();
         console.setText(printStream.getMsgs(trace, warn, error));
         answerField.setText("");
+    }
+
+    private void errorWindow(String errorMessage) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initOwner(stage);
+        alert.setTitle("Error");
+        alert.setHeaderText("Wrong input");
+        alert.setContentText(errorMessage);
+
+        alert.showAndWait();
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }

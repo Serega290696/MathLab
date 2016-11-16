@@ -4,10 +4,11 @@ import org.beltser.Main;
 import org.beltser.mathlab.Operator;
 import org.beltser.mathlab.equations.Equation;
 import org.beltser.mathlab.equations.impl.EquationImpl;
-import org.beltser.mathlab.exception.TimeLimitException;
+import org.beltser.mathlab.exception.ComputingTimeLimitException;
 import org.beltser.mathlab.expressions.types.NumericExpression;
 import org.beltser.mathlab.expressions.types.VariableExpression;
 import org.beltser.mathlab.matrix.Matrix;
+import org.beltser.mathlab.matrix.MatrixFactory;
 import org.beltser.mathlab.report.Report;
 import org.beltser.mathlab.report.ReportPrinter;
 import org.beltser.mathlab.report.ReportPrinterConsole;
@@ -101,7 +102,7 @@ public class OperatorLab1 extends Operator<Matrix> {
     }
 
     @Override
-    protected Matrix compute(Map inputtedData) throws TimeLimitException {
+    protected Matrix compute(Map inputtedData) throws ComputingTimeLimitException {
         double[][] arrayMatrix = (double[][]) inputtedData.get(MATRIX_FIELD_NAME);
         double[][] arrayB = (double[][]) inputtedData.get(B_FIELD_NAME);
         Matrix b = new Matrix(arrayB);
@@ -110,7 +111,7 @@ public class OperatorLab1 extends Operator<Matrix> {
         System.out.println(matrixA);
         int width = arrayMatrix[0].length;
         int height = arrayMatrix.length;
-        Matrix L = Matrix.newUpperTriangular(width, height);
+        Matrix L = MatrixFactory.newUpperTriangular(width, height);
 //        Matrix Lt = Matrix.newLowerTriangular(height, width, 2);
         Matrix Lt = L.transpose();
         Matrix multiply = Lt.multiply(L);

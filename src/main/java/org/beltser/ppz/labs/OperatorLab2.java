@@ -1,9 +1,10 @@
 package org.beltser.ppz.labs;
 
 import org.beltser.mathlab.Operator;
-import org.beltser.mathlab.exception.TimeLimitException;
+import org.beltser.mathlab.exception.ComputingTimeLimitException;
+import org.beltser.mathlab.exception.ExpressionParsingException;
 import org.beltser.mathlab.expressions.Expression;
-import org.beltser.mathlab.expressions.parser.ExpressionParser;
+import org.beltser.mathlab.ExpressionParser;
 import org.beltser.mathlab.report.Report;
 import org.beltser.mathlab.report.ReportPrinter;
 import org.beltser.mathlab.report.ReportPrinterConsole;
@@ -54,13 +55,18 @@ public class OperatorLab2 extends Operator<BigDecimal> {
     }
 
 
-    protected BigDecimal compute(Map inputtedData) throws TimeLimitException {
+    protected BigDecimal compute(Map inputtedData) throws ComputingTimeLimitException {
         long beginTime = System.currentTimeMillis();
         String expressionString = (String) inputtedData.get(EXPRESSION_FIELD_NAME);
         double a = (double) inputtedData.get(BEGIN_BOUNDARY_FIELD_NAME);
         double b = (double) inputtedData.get(END_BOUNDARY_FIELD_NAME);
 
-        Expression expression = ExpressionParser.parse(expressionString);
+        Expression expression = null;
+        try {
+            expression = ExpressionParser.PARSER_INSTANCE.parse(expressionString);
+        } catch (ExpressionParsingException e) {
+            e.printStackTrace();
+        }
         final double stepSize = 0.0001;
         final long stepsAmount = (long) Math.floor((b - a) / stepSize);
 
@@ -78,7 +84,7 @@ public class OperatorLab2 extends Operator<BigDecimal> {
             );
 //            MathSystem.out.println(i + ". x = " + (a + i * stepSize + stepSize / 2d) + ", y = " + functionValueInCurrentPoint.doubleValue());
             if (System.currentTimeMillis() - beginTime > timeLimitTimeunit.toMillis(timeLimit)) {
-                throw new TimeLimitException();
+                throw new ComputingTimeLimitException();
             }
         }
         integralValue = integralValue.multiply(new BigDecimal(stepSize));

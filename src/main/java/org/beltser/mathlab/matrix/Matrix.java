@@ -4,7 +4,6 @@ import org.beltser.mathlab.expressions.Expression;
 import org.beltser.mathlab.expressions.types.MultipleExpression;
 import org.beltser.mathlab.expressions.types.NumericExpression;
 import org.beltser.mathlab.expressions.types.PlusExpression;
-import org.beltser.mathlab.expressions.types.VariableExpression;
 
 import java.util.Map;
 
@@ -42,45 +41,15 @@ public class Matrix {
         }
     }
 
-    public <T extends Number> Matrix(Object[][] twoDimensionalArray) throws Exception {
+    public Matrix(Double[][] twoDimensionalArray) throws Exception {
         this.height = twoDimensionalArray.length;
         this.width = twoDimensionalArray[0].length;
         matrixArray = new Expression[height][width];
-        if ((twoDimensionalArray[0][0] instanceof Number)) {
-            throw new Exception("Wrong matrixArray element type");
-        }
-        Double[][] array = (Double[][]) twoDimensionalArray;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                set(i, j, new NumericExpression(array[i][j].doubleValue()));
+                set(i, j, new NumericExpression(twoDimensionalArray[i][j].doubleValue()));
             }
         }
-    }
-
-    public static Matrix newUpperTriangular(int width, int height) {
-        return newLowerTriangular(width, height, 0).transpose();
-    }
-
-    public static Matrix newUpperTriangular(int width, int height, int varsPortion) {
-        return newLowerTriangular(width, height, varsPortion).transpose();
-    }
-
-    public static Matrix newLowerTriangular(int width, int height) {
-        return newLowerTriangular(width, height, 0);
-    }
-
-    public static Matrix newLowerTriangular(int width, int height, int varsPortion) {
-        Matrix matrix = new Matrix(width, height);
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                if (i < j) {
-                    matrix.set(i, j, new NumericExpression(0d));
-                } else {
-                    matrix.set(i, j, new VariableExpression((int) (100 * varsPortion + (i + 1) * 10 + j + 1)));
-                }
-            }
-        }
-        return matrix;
     }
 
     public void set(int i, int j, Expression expression) {
@@ -124,11 +93,6 @@ public class Matrix {
     }
 
     public Matrix multiply(Matrix multiplicand) {
-        //System.out.println("Matrix.multiply");
-        //System.out.println("Original:");
-        //System.out.println(this);
-        //System.out.println("Multiplicand:");
-        //System.out.println(multiplicand);
         Matrix multiplication = new Matrix(multiplicand.getWidth(), height);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < multiplicand.getWidth(); j++) {
@@ -149,8 +113,6 @@ public class Matrix {
                 }
             }
         }
-        //System.out.println("Multiplication:");
-        //System.out.println(multiplication);
         return multiplication;
     }
 
@@ -172,5 +134,102 @@ public class Matrix {
             string.append("\n");
         }
         return string.toString();
+    }
+
+    public boolean isInitialized() {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (get(i, j) == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isSymmetric() {
+        if (width != height) {
+            return false;
+        }
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (get(j, i).value() != get(i, j).value()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isPositive() {
+        Matrix matrix = this;
+        for (int i = 0; i < height; i++) {
+            double det = matrix.det();
+            if(det <= 0) {
+                return false;
+            }
+            matrix = matrix.crossOutCol(width - i).crossOutRow(height - i);
+        }
+        return true;
+    }
+
+    public double det() {
+        if (width != height) {
+            throw new RuntimeException("Not supported operation");
+        }
+        if (width > 2) {
+            double det = 0;
+            for (int i = 0; i < width; i++) {
+                det += (Math.signum(i % 2 - 0.5)) * get(0, i).value() * this.crossOutRow(1).crossOutCol(i + 1).det();
+            }
+            return det;
+        }
+        if (width == 2) {// height the same (height = 2)
+            return get(0, 0).value() * get(1, 1).value() - get(0, 1).value() * get(1, 0).value();
+        }
+        if (width == 1) {// height the same (height = 1)
+            return get(0, 0).value();
+        }
+        throw new RuntimeException("Not supported operation");
+    }
+
+    public boolean subMatrix(int x1, int y1, int x2, int y2) {
+        Expression[][] subMatrix = new Expression[y2 - y1][x2 - x1];
+        for (int i = y1; i < y2; i++) {
+            for (int j = x1; j < x2; j++) {
+                subMatrix[i][j] = get(i, j);
+            }
+        }
+        return false;
+    }
+
+    public Matrix crossOutRow(int row) {
+        row--;
+        Matrix newMatrix = new Matrix(width, height - 1);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (i < row) {
+                    newMatrix.set(i, j, get(i, j));
+                } else if (i > row) {
+                    newMatrix.set(i - 1, j, get(i, j));
+                }
+            }
+        }
+        return newMatrix;
+    }
+
+    public Matrix crossOutCol(int column) {
+        column--;
+        Matrix newMatrix = new Matrix(width - 1, height);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (j < column) {
+                    newMatrix.set(i, j, get(i, j));
+                } else if (j > column) {
+                    newMatrix.set(i, j - 1, get(i, j));
+                }
+            }
+        }
+        return newMatrix;
     }
 }

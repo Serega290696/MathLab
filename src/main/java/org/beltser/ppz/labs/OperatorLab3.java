@@ -1,9 +1,10 @@
 package org.beltser.ppz.labs;
 
 import org.beltser.mathlab.Operator;
-import org.beltser.mathlab.exception.TimeLimitException;
+import org.beltser.mathlab.exception.ComputingTimeLimitException;
+import org.beltser.mathlab.exception.ExpressionParsingException;
 import org.beltser.mathlab.expressions.Expression;
-import org.beltser.mathlab.expressions.parser.ExpressionParser;
+import org.beltser.mathlab.ExpressionParser;
 import org.beltser.mathlab.report.Report;
 import org.beltser.mathlab.report.ReportPrinter;
 import org.beltser.mathlab.report.ReportPrinterConsole;
@@ -60,7 +61,7 @@ public class OperatorLab3 extends Operator<BigDecimal> {
     }
 
 
-    protected BigDecimal compute(Map inputtedData) throws TimeLimitException {
+    protected BigDecimal compute(Map inputtedData) throws ComputingTimeLimitException {
         long beginTime = System.currentTimeMillis();
         String expressionString = (String) inputtedData.get(EXPRESSION_FIELD_NAME);
         double x = (double) inputtedData.get(X_ZERO_FIELD_NAME);
@@ -68,7 +69,12 @@ public class OperatorLab3 extends Operator<BigDecimal> {
         double a = (double) inputtedData.get(A_FIELD_NAME);
         double b = (double) inputtedData.get(B_FIELD_NAME);
 
-        Expression expression = ExpressionParser.parse(expressionString);
+        Expression expression = null;
+        try {
+            expression = ExpressionParser.PARSER_INSTANCE.parse(expressionString);
+        } catch (ExpressionParsingException e) {
+            e.printStackTrace();
+        }
 
         final double h = 0.001; // step size
         final double epsilon = Math.pow(10d, -5);
@@ -120,7 +126,7 @@ public class OperatorLab3 extends Operator<BigDecimal> {
                 System.out.println("x = " + x + ". y = " + y + ".");
             }
             if (System.currentTimeMillis() - beginTime > timeLimitTimeunit.toMillis(timeLimit)) {
-                throw new TimeLimitException();
+                throw new ComputingTimeLimitException();
             }
         } while (x < b);
         System.out.println(y);

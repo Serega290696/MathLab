@@ -1,7 +1,7 @@
 package org.beltser.mathlab;
 
 import org.beltser.Main;
-import org.beltser.mathlab.exception.TimeLimitException;
+import org.beltser.mathlab.exception.ComputingTimeLimitException;
 import org.beltser.mathlab.report.Report;
 
 import java.util.Map;
@@ -16,7 +16,7 @@ public abstract class Operator<R> {
         boolean successful = true;
         try {
             result = compute(args);
-        } catch (TimeLimitException e) {
+        } catch (ComputingTimeLimitException e) {
             successful = false;
             timeLimitExceed = true;
         }
@@ -36,7 +36,7 @@ public abstract class Operator<R> {
 
     protected abstract Map getInput();
 
-    protected abstract R compute(Map inputtedData) throws TimeLimitException;
+    protected abstract R compute(Map inputtedData) throws ComputingTimeLimitException;
 
     protected abstract void showResult(Report<R> report);
 

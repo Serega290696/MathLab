@@ -1,7 +1,8 @@
-package org.beltser.mathlab.expressions.parser;
+package org.beltser.mathlab;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.beltser.mathlab.exception.ExpressionParsingException;
 import org.beltser.mathlab.expressions.Expression;
 import org.beltser.mathlab.expressions.types.*;
 import org.beltser.mathlab.utils.MathUtil;
@@ -9,19 +10,24 @@ import org.beltser.mathlab.utils.MathUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExpressionParser {
-
+public enum ExpressionParser {
+    PARSER_INSTANCE;
+    //  public static ExpressionParser parserInstance = PARSER_INSTANCE;
     private static int printLvl = 0;
     private static String indentSymbol = "   ";
+    public static boolean enableTrace = false;
 
-    private static void print(String msg) {
+    private void print(String msg) {
         for (int i = 0; i < printLvl; i++) {
             msg = indentSymbol + "|" + msg;
+        }
+        if (enableTrace) {
+            System.out.println(msg);
         }
 //        MathSystem.out.println(msg);
     }
 
-    public static Expression parse(String stringExpression) {
+    public Expression parse(String stringExpression) throws ExpressionParsingException {
         printLvl++;
         stringExpression = stringExpression.replaceAll("\\s+", "");
         print("BEGIN[" + stringExpression + "]");
@@ -79,7 +85,8 @@ public class ExpressionParser {
             } else if (!hidden) {
                 if (stringExpression.charAt(i) == '*'
                         || stringExpression.charAt(i) == '/'
-                        || stringExpression.charAt(i) == '^') {
+//            || stringExpression.charAt(i) == '^'
+                        ) {
                     complexOperatorPosition.add(i);
                 }
             }
@@ -121,20 +128,25 @@ public class ExpressionParser {
                         );
                     }
                     for (int k = 0; k < complexOperatorPosition.size(); k++) {
-                        print("K: " + complexOperatorPosition.get(k));
+//                        print("K: " + complexOperatorPosition.get(k));
                     }
-                    print("" + (plusOrMinusPosition.get(i + 1)));
-                    print("" + complexOperatorPosition.get(j));
-                    print("" + endIndex);
-                    print("Create MultipleExpression: " + stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex));
+//                    print("" + (plusOrMinusPosition.get(i + 1)));
+//                    print("" + complexOperatorPosition.get(j));
+//                    print("" + endIndex);
+
                     if (stringExpression.charAt(complexOperatorPosition.get(j)) == '*') {
 
                         if (leftExpression != null) {
+                            print("Create MultipleExpression: " + stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex));
                             subExpression = new MultipleExpression(
                                     leftExpression,
                                     parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex))
                             );
                         } else {
+                            print("Create MultipleExpression: " + parse(stringExpression.substring(plusOrMinusPosition.get(i) + 1,
+                                    complexOperatorPosition.get(j))) + " xxx " +
+                                    parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex)
+                                    ));
                             subExpression = new MultipleExpression(
                                     parse(stringExpression.substring(plusOrMinusPosition.get(i) + 1,
                                             complexOperatorPosition.get(j))),
@@ -155,21 +167,22 @@ public class ExpressionParser {
                                     parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex))
                             );
                         }
-                    } else if (stringExpression.charAt(complexOperatorPosition.get(j)) == '^') {
-
-                        if (leftExpression != null) {
-                            subExpression = new PowerExpression(
-                                    leftExpression,
-                                    parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex))
-                            );
-                        } else {
-                            subExpression = new PowerExpression(
-                                    parse(stringExpression.substring(plusOrMinusPosition.get(i) + 1,
-                                            complexOperatorPosition.get(j))),
-                                    parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex))
-                            );
-                        }
                     }
+//                    else if (stringExpression.charAt(complexOperatorPosition.get(j)) == '^') {
+//
+//                        if (leftExpression != null) {
+//                            subExpression = new PowerExpression(
+//                                    leftExpression,
+//                                    parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex))
+//                            );
+//                        } else {
+//                            subExpression = new PowerExpression(
+//                                    parse(stringExpression.substring(plusOrMinusPosition.get(i) + 1,
+//                                            complexOperatorPosition.get(j))),
+//                                    parse(stringExpression.substring(complexOperatorPosition.get(j) + 1, endIndex))
+//                            );
+//                        }
+//                    }
 
                     leftExpression = subExpression;
                 }
@@ -178,6 +191,7 @@ public class ExpressionParser {
                 subExpression =
                         subExpressionParse(subString, null);
                 print("Create " + subExpression.getLexemType());
+                print("Create: " + subExpression.toString());
             }
             if (plusOrMinusPosition.get(i) >= 0 && plusOrMinusPosition.get(i) < stringExpression.length()
                     && stringExpression.charAt(plusOrMinusPosition.get(i)) == '-') {
@@ -196,31 +210,19 @@ public class ExpressionParser {
         return e;
     }
 
-    static class ExpressionParsingReport {
-        private Expression expression;
-        private String restStringExpression;
-
-        public ExpressionParsingReport(Expression expression, String restStringExpression) {
-            this.expression = expression;
-            this.restStringExpression = restStringExpression;
-        }
-
-        public Expression getExpression() {
-            return expression;
-        }
-
-        public String getRestStringExpression() {
-            return restStringExpression;
-        }
-    }
-
-    public static Expression subExpressionParse(String stringExpression, Expression leftExpression) {
+    private Expression subExpressionParse(String stringExpression, Expression leftExpression) throws ExpressionParsingException {
         printLvl++;
+        if (stringExpression == null) {
+            throw new ExpressionParsingException("Substring is empty");
+        }
         stringExpression = stringExpression.replaceAll("\\s+", "");
-        String newStringExpression = stringExpression;
         print("BEGIN_sub[" + stringExpression + "]");
         Expression currentExpression = null;
+        if (stringExpression == null || stringExpression.length() == 0) {
+            throw new ExpressionParsingException("Substring is empty");
+        }
         char c = stringExpression.charAt(0);
+        String newStringExpression;
         if (NumberUtils.isNumber(String.valueOf(c))
                 || (c == '-' && leftExpression == null)) {
             boolean creatable = true;
@@ -238,10 +240,8 @@ public class ExpressionParser {
             }
             substring = stringExpression.substring(0, stringLength);
             currentExpression = new NumericExpression(Double.parseDouble(substring));
-            if (stringLength <= stringExpression.length()) {
-                newStringExpression = stringExpression.substring(stringLength);
-            } else {
-                newStringExpression = "";
+            if (stringExpression.length() - stringLength > 0) {
+                currentExpression = subExpressionParse(stringExpression.substring(stringLength), currentExpression);
             }
         } else if (c == '+') {
             newStringExpression = stringExpression.substring(1);
@@ -256,15 +256,16 @@ public class ExpressionParser {
             newStringExpression = stringExpression.substring(1);
             currentExpression = new DivideExpression(leftExpression, subExpressionParse(stringExpression.substring(1), null));
         } else if (c == '(') {
-            newStringExpression = stringExpression.substring(1, stringExpression.indexOf(')') + 1);
+            newStringExpression = stringExpression.substring(1, stringExpression.indexOf(')'));
             currentExpression = parse(newStringExpression);//new PlusExpression(leftExpression, newStringExpression);
         } else if (c == '^') {
             newStringExpression = stringExpression.substring(1);
             currentExpression = new PowerExpression(leftExpression, subExpressionParse(stringExpression.substring(1), null));
         } else if (c == 'e') {
 //            print(stringExpression);
-            newStringExpression = stringExpression.substring(1);
-            currentExpression = new ExpExpression(subExpressionParse(stringExpression.substring(1), null));
+            currentExpression = subExpressionParse(stringExpression.substring(1), new ConstantExpression(Math.E));
+        } else if (c == 'p') {
+            currentExpression = subExpressionParse(stringExpression.substring(1), new ConstantExpression(Math.PI));
         } else if (c == 'x') {
             newStringExpression = stringExpression.substring(1);
             char nextChar;
@@ -281,8 +282,10 @@ public class ExpressionParser {
                 System.out.println(" [WARN] 'x' in expression without index");
                 number = "1";
             }
-            System.out.println(number);
             currentExpression = new VariableExpression(Integer.parseInt(number));
+            if (stringExpression.length() > 1) {
+                currentExpression = subExpressionParse(stringExpression.substring(1), currentExpression);
+            }
         } else if (c == 'y') {
 //            print(stringExpression);
             newStringExpression = stringExpression.substring(1);
@@ -312,10 +315,28 @@ public class ExpressionParser {
         }
 
         if (currentExpression == null) {
-            throw new NullPointerException("Invalid expression");
+            throw new ExpressionParsingException("Invalid expression: " + stringExpression);
         }
         printLvl--;
         return currentExpression;
+    }
+
+    static class ExpressionParsingReport {
+        private Expression expression;
+        private String restStringExpression;
+
+        public ExpressionParsingReport(Expression expression, String restStringExpression) {
+            this.expression = expression;
+            this.restStringExpression = restStringExpression;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public String getRestStringExpression() {
+            return restStringExpression;
+        }
     }
 
 }

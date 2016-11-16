@@ -17,7 +17,8 @@ public enum LexemType {
     CTG("ctg", "ctg", 3),
     SQR("sqr", "sqr", 3),
     ABS("abs", "abs", 3),
-    LN("ln", "ln", 3);
+    LN("ln", "ln", 3),
+    CONSTANT("", "", 4);
 
     private final String opSymbol;
     private final String opName;
