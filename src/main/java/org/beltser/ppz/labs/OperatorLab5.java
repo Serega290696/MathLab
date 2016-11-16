@@ -47,7 +47,7 @@ public class OperatorLab5 extends Operator<Double> {
 
 
     protected Double compute(Map inputtedData) throws TimeLimitException {
-        final boolean DEBUG = true;
+        final boolean DEBUG = false;
         //read input
         long beginTime = System.currentTimeMillis();
         Matrix a;

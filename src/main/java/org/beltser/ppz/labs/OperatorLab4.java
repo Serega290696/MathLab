@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class OperatorLab4 extends Operator<BigDecimal> {
+public class OperatorLab4 extends Operator<Point> {
 
   private static final long DEFAULT_TIME_LIMIT = 5;
   private static final TimeUnit DEFAULT_TIME_LIMIT_TIMEUNIT = TimeUnit.SECONDS;
@@ -32,7 +32,7 @@ public class OperatorLab4 extends Operator<BigDecimal> {
   public static final String B_FIELD_NAME = "b";
   public static final String C_FIELD_NAME = "c";
 
-  private ReportPrinter<BigDecimal> reportPrinter = new ReportPrinterConsole<>();
+  private ReportPrinter<Point> reportPrinter = new ReportPrinterConsole<>();
 
   public OperatorLab4(ReportPrinter reportPrinter) {
     this.reportPrinter = reportPrinter;
@@ -66,8 +66,8 @@ public class OperatorLab4 extends Operator<BigDecimal> {
   }
 
 
-  protected BigDecimal compute(Map inputtedData) throws TimeLimitException {
-    final boolean DEBUG = true;
+  protected Point compute(Map inputtedData) throws TimeLimitException {
+    final boolean DEBUG = false;
     //read input
     long beginTime = System.currentTimeMillis();
     String functionString;
@@ -108,23 +108,27 @@ public class OperatorLab4 extends Operator<BigDecimal> {
         funValues.add(calcFunInPoint(points.get(i), function));
       }
     } else {
+      points.add(new Point(10, 9));
+      points.add(new Point(10, -2));
+      points.add(new Point(21, 1));
       //init base figure
-      final double minPointCoord = 0.1;
-      final double maxPointCoord = 0.9;
-      vars = new HashMap<>();
-      Iterator<Integer> iterator = variables.iterator();
+//      final double minPointCoord = 0.1;
+//      final double maxPointCoord = 0.9;
+//      vars = new HashMap<>();
+//      Iterator<Integer> iterator = variables.iterator();
       for (int i = 0; i < n + 1; i++) {
-        double[] coords = new double[i + 1];
-        for (int j = 0; j < i; j++) {
-          if (j < i + 1) {
-            coords[j] = minPointCoord + maxPointCoord * Math.random();
-          } else {
-            coords[j] = 0;
-          }
-          vars.put(iterator.next(), new NumericExpression(coords[j]));
-        }
-        points.add(new Point(coords));
-        funValues.add(function.replaceVariableBy(vars).value());
+//        double[] coords = new double[i + 1];
+//        for (int j = 0; j < i; j++) {
+//          if (j < i + 1) {
+//            coords[j] = minPointCoord + maxPointCoord * Math.random();
+//          } else {
+//            coords[j] = 0;
+//          }
+//          vars.put(iterator.next(), new NumericExpression(coords[j]));
+//        }
+//        Point p = new Point(coords);
+//        points.add(p);
+        funValues.add(calcFunInPoint(points.get(i), function));
       }
     }
 
@@ -290,7 +294,7 @@ public class OperatorLab4 extends Operator<BigDecimal> {
       }
     }
 
-    return null;
+    return points.get(0);
   }
 
   private double calcFunInPoint(Point x, Expression function) {
@@ -303,7 +307,7 @@ public class OperatorLab4 extends Operator<BigDecimal> {
   }
 
   @Override
-  protected void showResult(Report<BigDecimal> report) {
+  protected void showResult(Report<Point> report) {
     reportPrinter.print(report);
   }
 

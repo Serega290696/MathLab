@@ -3,6 +3,7 @@ package org.beltser.mathlab.report;
 import org.beltser.controller.FrontController;
 import org.beltser.mathlab.matrix.Matrix;
 import org.beltser.mathlab.utils.MathUtil;
+import org.beltser.mathlab.linear_geometry.Point;
 
 public class ReportPrinterJavafx<R> implements ReportPrinter<R> {
     private FrontController controller;
@@ -32,6 +33,9 @@ public class ReportPrinterJavafx<R> implements ReportPrinter<R> {
                                 answer.append(" = ").append(result.get(i, j)).append("\n");
                             }
                         }
+                    } else if (report.getResult() instanceof Point) {
+                        Point p = (Point)report.getResult();
+                        answer.append(" || Result: ").append(p).append(".").append("\n");
                     } else {
                         Number result = (Number) report.getResult();
                         answer.append(" || Result: ").append(MathUtil.round(result, 4)).append(".").append("\n");
@@ -45,9 +49,9 @@ public class ReportPrinterJavafx<R> implements ReportPrinter<R> {
             }
         }
         answer.append(" =================== ").append("\n");
-        if(controller != null) {
+        if (controller != null) {
             controller.printAnswer(answer.toString());
-        }else {
+        } else {
             System.err.println("Can't print report");
         }
     }
